@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager's Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(45deg, #ff7eb9, #9ad8ff); /* Pink and blue colors */
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+            padding-top: 50px;
+        }
+        h1 {
+            color: white;
+        }
+        .search-bar {
+            margin: 20px;
+        }
+        input[type="text"],
+        select {
+            padding: 10px;
+            width: 300px;
+            border-radius: 5px;
+            border: none;
+            margin-right: 10px;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Manager's Dashboard</h1>
+
+        <form class="search-bar" action="/search" method="post">
+            <input type="text" id="psi_id" name="psi_id" placeholder="Enter Reporting Manager PSI ID">
+            <input type="submit" value="Search">
+        </form>
+        <form class="search-bar" action="/search" method="post">
+            <select name="location">
+                <option value="">Select Location</option>
+                <option value="Bangalore-1">Bangalore-1</option>
+                <option value="Bangalore-2">Bangalore-2</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Ballari">Ballari</option>
+                <option value="Hyderabad">Hyderabad</option>
+                <option value="Nellore">Nellore</option>
+                <option value="Chennai">Chennai</option>
+                <option value="NA">NA</option>
+
+            </select>
+            <input type="submit" value="Search">
+        </form>
+        <form class="search-bar" action="/search" method="post">
+            <select name="project">
+                <option value="">Select Project</option>
+                <option value="Project 1">Project 1</option>
+                <option value="Project 2">Project 2</option>
+            </select>
+            <input type="submit" value="Search">
+        </form>
+        <form class="search-bar" action="/search" method="post">
+            <select name="BU">
+                <option value="">Select BU</option>
+                <option value="Operations">Operations</option>
+                <option value="Engineering">Engineering</option>
+                <option value="HR">HR</option>
+                <option value="Sales & Business Development">Sales & Business Development</option>
+                <option value="Design India">Design India</option>
+                <option value="Marketing">Marketing</option>
+                <option value="InternalIT">InternalIT</option>
+                <option value="CEO">CEO</option>
+                <option value="Sales">Sales</option>
+                <option value="Finance">Finance</option>
+            </select>
+            <input type="submit" value="Search">
+        </form>
+    </div>
+</body>
+</html>
+<!-- apps-fileview.texmex_20240321.01_p0
+index_db.html
+Displaying index_db.html. -->

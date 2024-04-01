@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager and Employee Attendance</title>
+    <style>
+        body {
+            font-family: serif;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        /* Beautify employee details box */
+        .employee-details {
+            border: 1px solid #dddddd;
+            padding: 20px;
+            width: 45%;
+            margin-right: 20px;
+            border-radius: 35px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            float: left;
+            height: 300px;
+        }
+
+        .pie-chart {
+            border: 1px solid #dddddd;
+            padding: 20px;
+            width: 45%;
+            border-radius: 35px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            float: right;
+            height: 300px;
+        }
+
+        .employee-attendance {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 5px;
+        }
+        /* Adjust padding and font size for manager details table */
+        .employee-details table th,
+        .employee-details table td {
+            padding: 6px 13px;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="employee-details">
+        <h1>Manager Details</h1>
+        <table>
+            <tr>
+                <th>Employee Code</th>
+                <td>{{ manager_info[0] }}</td>
+            </tr>
+            <tr>
+                <th>Employee Name</th>
+                <td>{{ manager_info[1] }}</td>
+            </tr>
+            <tr>
+                <th>Designation</th>
+                <td>{{ manager_info[2] }}</td>
+            </tr>
+            
+            <tr>
+                <th>Reporting Manager</th>
+                <td>{{ manager_info[4] }}</td>
+            </tr>
+            <tr>
+                <th>BU</th>
+                <td>{{ manager_info[5] }}</td>
+            </tr>
+            <tr>
+                <th>Location</th>
+                <td>{{ manager_info[7] }}</td>
+            </tr>
+            </table>
+        </div>
+    
+        <div class="pie-chart">
+            <h1>Pie Chart</h1>
+            <canvas id="pieChart" width="200" height="200"></canvas>
+        </div>
+    
+        <!-- Employee Attendance -->
+        <div class="employee-attendance">
+            <h1>Employee Attendance</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="6" style="text-align: center;">Reporting manager - {{ manager_info[1] }}</th>
+                    </tr>
+                        <th colspan="6" style="text-align: center;">Date Range From 01-Mar - 26-Mar</th>
+                    <tr>
+                        <th>Employee Code</th>
+                        <th>Employee Name</th>
+                        <th>Present</th>
+                        <th>Absent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in combined_data %}
+                    <tr>
+                        <td>{{ data[0] }}</td> <!-- Employee Code -->
+                        <td>{{ data[1] }}</td> <!-- Employee Name -->
+                        <td>{{ data[2] }}</td> <!-- Total Present -->
+                        <td>{{ data[3] }}</td> <!-- Total Absent -->
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="button-container">
+            <a href="/">Back to Home</a>
+            <a href="/download_csv_emp">Download CSV</a>
+        </div>
+        
+        
+        <script>
+            var canvas = document.getElementById("pieChart");
+            var ctx = canvas.getContext("2d");
+            var centerX = canvas.width / 2;
+            var centerY = canvas.height / 2;
+            var radius = Math.min(canvas.width, canvas.height) / 2 - 10;
+
+            // Calculate present and absent data
+            var presentData = 40; // Example data, replace with actual data
+            var absentData = 60;  // Example data, replace with actual data
+            var presentColor = "#4CAF50";
+            var absentColor = "#F44336";
+
+            // Draw present slice
+            var presentStartAngle = 0;
+            var presentEndAngle = (presentData / 100) * Math.PI * 2;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, presentStartAngle, presentEndAngle);
+            ctx.closePath();
+            ctx.fillStyle = presentColor;
+            ctx.fill();
+
+            // Draw absent slice
+            var absentStartAngle = presentEndAngle;
+            var absentEndAngle = (absentData / 100) * Math.PI * 2;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, absentStartAngle, absentStartAngle + absentEndAngle);
+            ctx.closePath();
+            ctx.fillStyle = absentColor;
+            ctx.fill();
+        </script>
+    </body>
+    </html>
+    

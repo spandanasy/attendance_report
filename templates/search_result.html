@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Details</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(45deg, #ff7eb9, #9ad8ff); /* Pink and blue colors */
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            color: white;
+            text-align: center;
+            padding-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        p {
+            color: white;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .button-container a {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-right: 10px;
+            background-color: #ffffff;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .button-container a:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    {% if employee_details %}
+    <table>
+        <thead>
+            <tr>
+                <th colspan="12" style="text-align: center;">Attendance Report: {{ search_type }}</th>
+            </tr>
+            <tr>
+                <th colspan="12" style="text-align: center;">Date Range: {{ start_date|default('01-mar') }} - {{ end_date|default('26-mar') }}</th>
+            </tr>
+            <tr>
+                {% if search_type.startswith("Employees") %}
+                <th>Employee Code</th>
+                <th>Employee Name</th>
+                <th>Reporting Manager</th>
+                <th>BU</th> <!-- Display BU for BU search -->
+                {% else %}
+                <th>Employee Code</th>
+                <th>Employee Name</th>
+                <th>Reporting Manager</th>
+                <th>Location</th> <!-- Display Location for Location search -->
+                {% endif %}
+                <th>Total Present</th>
+                <th>Total Absent</th>
+                <!-- Add other employee details if necessary -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for employee in employee_details %}
+            <tr>
+                {% if search_type.startswith("Employees") %}
+                <td>{{ employee[0] }}</td>
+                <td>{{ employee[1] }}</td>
+                <td>{{ employee[2] }}</td>
+                <td>{{ employee[3] }}</td> <!-- Display BU for BU search -->
+                {% else %}
+                <td>{{ employee[0] }}</td>
+                <td>{{ employee[1] }}</td>
+                <td>{{ employee[2] }}</td>
+                <td>{{ employee[3] }}</td> <!-- Display Location for Location search -->
+                {% endif %}
+                <td>{{ employee[-2] }}</td> <!-- Total Present -->
+                <td>{{ employee[-3] }}</td> <!-- Total Absent -->
+
+                <!-- Add other employee details here -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="button-container">
+        <a href="/">Back to Home</a>
+        <a href="/download_csv">Download CSV</a>
+    </div>
+
+    {% else %}
+    <p>No employees found.</p>
+    {% endif %}
+</body>
+</html>
