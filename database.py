@@ -4,14 +4,14 @@ import csv
 # MySQL Connection Configuration
 config = {
     'user': 'root',
-    'password': 'spandana',
+    'password': 'spandana',  # Replace 'your_password' with your MySQL password
     'host': 'localhost',
     'database': 'employee',
     'raise_on_warnings': True
 }
 
 # SQL query to create the attendance table
-create_table_query1 = """
+create_table_query = """
 CREATE TABLE IF NOT EXISTS attendance_report (
     EmployeeCode VARCHAR(255),
     AbsentDates TEXT,
@@ -20,36 +20,34 @@ CREATE TABLE IF NOT EXISTS attendance_report (
     PRIMARY KEY (EmployeeCode)
 )
 """
-create_table_query2 = """
-CREATE TABLE IF NOT EXISTS attendance_report (
-    Employee Code VARCHAR(255),
-    Employee Name varchar(255),
-    Designation varchar(255),
-    Building varchar(255),
-    Reporting Manager varchar(255),
-    BU varchar(255),
-    Project varchar(255),
-    Location varchar(255),
-    PRIMARY KEY (Employee Code)
-)
-"""
-# Establish connection to MySQL server
+
 try:
+    # Establish connection to MySQL server
     connection = mysql.connector.connect(**config)
     cursor = connection.cursor()
 
     # Create table if not exists
-    cursor.execute(create_table_query1)
+    cursor.execute(create_table_query)
 
     # Read data from CSV file and insert into the table
     with open('db_attendance.csv', 'r') as file:
-        reader = csv.reader(file, delimiter=';')  # Set delimiter to semicolon
+        reader = csv.reader(file, delimiter=',')  # Assuming CSV is comma-delimited
         next(reader)  # Skip header row
         for row in reader:
-            # Split the row into individual values
+            # Extract values from the row
             employee_code, absent_dates, total_present, total_absent = row
-            # Insert data into the table
-            cursor.execute("INSERT INTO attendance_report (EmployeeCode, AbsentDates, TotalPresent, TotalAbsent) VALUES (%s, %s, %s, %s)", (employee_code, absent_dates, total_present, total_absent))
+
+            # Check if the record already exists in the table
+            cursor.execute("SELECT EmployeeCode FROM attendance_report WHERE EmployeeCode = %s", (employee_code,))
+            existing_record = cursor.fetchone()
+
+            if existing_record:
+                # Record already exists, handle accordingly (e.g., update existing record)
+                # Example: cursor.execute("UPDATE attendance_report SET ... WHERE EmployeeCode = %s", (employee_code,))
+                pass
+            else:
+                # Record does not exist, insert into the table
+                cursor.execute("INSERT INTO attendance_report (EmployeeCode, AbsentDates, TotalPresent, TotalAbsent) VALUES (%s, %s, %s, %s)", (employee_code, absent_dates, total_present, total_absent))
 
     # Commit changes
     connection.commit()
@@ -60,7 +58,7 @@ except mysql.connector.Error as error:
 
 finally:
     # Close cursor and connection
-    if connection.is_connected():
+    if 'connection' in locals() and connection.is_connected():
         cursor.close()
         connection.close()
         print("MySQL connection is closed.")

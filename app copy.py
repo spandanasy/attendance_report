@@ -5,6 +5,9 @@ from io import StringIO
 from datetime import datetime
 
 app = Flask(__name__)
+app.config['DEBUG'] = True
+upload_folder = 'uploads'
+app.config['upload_folder'] = upload_folder
 app.secret_key = 'your_secret_key_here'
 
 db = mysql.connector.connect(
@@ -22,7 +25,7 @@ def index():
 @app.route('/search', methods=['POST'])
 def search():
     psi_id = request.form.get('psi_id')
-    location = request.form.get('location')
+    location = request.form.get('Location')
     bu = request.form.get('BU')
     project = request.form.get('project')
     # building = request.form.get('building')
@@ -82,7 +85,7 @@ def search():
                 FROM master_table e
                 LEFT JOIN master_table m ON e.`ReportingManager` = m.`EmployeeCode`
                 WHERE e.Location = %s
-                ORDER BY 
+                ORDER BY m.`EmployeeName` ASC,
                 SUBSTRING_INDEX(e.EmployeeCode, ' - ', 1), 
                 CAST(SUBSTRING_INDEX(e.EmployeeCode, ' - ', -1) AS UNSIGNED) ASC
             """
@@ -92,13 +95,16 @@ def search():
             session['employee_details'] = employee_details
             session['search_type'] = location
             attendance_data = {}
-            attendance_query = "SELECT EmployeeCode, TotalPresent, TotalAbsent, AbsentDates FROM attendance_report WHERE EmployeeCode IN (SELECT `EmployeeCode` FROM master_table WHERE Location = %s)"
+            attendance_query = """
+            SELECT EmployeeCode, TotalPresent, TotalAbsent, AbsentDates
+            FROM attendance_report 
+            WHERE EmployeeCode IN (SELECT `EmployeeCode` FROM master_table WHERE Location = %s)
+            """
             cursor.execute(attendance_query, (location,))
             attendance_records = cursor.fetchall()
 
-            for record in attendance_records:
-                attendance_data[record[0]] = {'TotalPresent': record[1], 'TotalAbsent': record[2],
-                                              'AbsentDates': record[3]}
+            attendance_data = {record[0]:{'TotalPresent': record[1], 'TotalAbsent': record[2],
+                                              'AbsentDates': record[3]} for record in attendance_records}
 
             for i, employee in enumerate(employee_details):
                 employee_code = employee[0]
@@ -111,8 +117,11 @@ def search():
 
                 else:
                     employee_details[i] += ("", "", "")
-            return render_template('search_result.html', employee_details=employee_details,
-                                   search_type=location)
+            number_of_values = len(employee_details)
+            # print("Number of retrived values:", number_of_values)
+            print("Search Type (location):", location)
+            return render_template('search_location.html', employee_details=employee_details,
+                                   search_type=location, number_of_values=number_of_values)
 
         elif project:
             query = "SELECT `EmployeeCode`, `EmployeeName`, `ReportingManager` FROM master_table WHERE Project = %s"
@@ -128,7 +137,7 @@ def search():
                 FROM master_table e
                 LEFT JOIN master_table m ON e.`ReportingManager` = m.`EmployeeCode`
                 WHERE e.BU = %s
-                ORDER BY 
+                ORDER BY m.`EmployeeName` ASC,
                 SUBSTRING_INDEX(e.EmployeeCode, ' - ', 1), 
                 CAST(SUBSTRING_INDEX(e.EmployeeCode, ' - ', -1) AS UNSIGNED) ASC
             """
@@ -155,8 +164,10 @@ def search():
 
                 else:
                     employee_details[i] += ("", "", "")
-            return render_template('search_result.html', employee_details=employee_details,
-                                   search_type=bu)
+            number_of_values = len(employee_details)
+            print("Search Type (BU):", bu)
+            return render_template('search_BU.html', employee_details=employee_details,
+                                   search_type=bu,number_of_values=number_of_values)
 
         else:
             return "Error: invalid search request"
@@ -174,16 +185,9 @@ def download_csv_emp():
         # Send CSV as a response
         manager_name = manager_info[1]
         #cursor.execute("SELECT MIN(Date), MAX(Date) FROM attendance_report WHERE EmployeeCode = %s", (manager_info[0],))
-        absent_dates = fetch_absent_dates(manager_info[0])
-        if absent_dates:
-            min_date = min(absent_dates)
-            max_date = max(absent_dates)
-            date_range = f"{min_date} to {max_date}"
-        else:
-            date_range = "No date range available"
+        
         header_lines = [
             f"Reporting Manager- {manager_name}",
-            f"Date Range: {date_range}"
         ]
         csv_data_with_headers = "\n".join(header_lines) + "\n" + csv_data
 
@@ -197,30 +201,8 @@ def download_csv_emp():
         # Handle case when CSV data is not available
         return "No CSV data available"
     
-def fetch_absent_dates(manager_id):
-    try:
-        query = """
-        SELECT AbsentDate
-        FROM attendance_report
-        WHERE EmployeeCode IN (
-            SELECT EmployeeCode
-            FROM master_table
-            WHERE ReportingManager = %s
-        )
-        """
-        cursor.execute(query, (manager_id,))
-        results = cursor.fetchall()
-        absent_dates = [result[0] for result in results]
-        cursor.close()
-        db.close()
-
-        return absent_dates
-    except Exception as e:
-        print(f"An error occurred while fetching absent dates: {str(e)}")
-        return []
-    
-@app.route('/download_csv')
-def download_csv():
+@app.route('/download_csv_location')
+def download_csv_location():
     try:
         employee_details = session.get('employee_details')
         if not employee_details:
@@ -229,29 +211,17 @@ def download_csv():
         csv_output = StringIO()
         csv_writer = csv.writer(csv_output)
         search_type = session.get('search_type')
-        # search_value = search_type.split(': ')[-1]
-
-        if "Employees" in search_type:
-            department_name = search_type.split(': ')[1]
-
-        else:
-            department_name = ""
-
+        
         start_date = session.get('Mar-1')
-        end_date = session.get('Mar-26')
+        end_date = session.get('Mar-31')
 
         start_date_str = start_date.strftime("%Y-%m-%d") if start_date else "01-Mar"
-        end_date_str = end_date.strftime("%Y-%m-%d") if end_date else "26-Mar"
+        end_date_str = end_date.strftime("%Y-%m-%d") if end_date else "31-Mar"
 
         csv_writer.writerow(["Attendance report: {}".format(search_type)])
         csv_writer.writerow(["Date Range: {} to {}".format(start_date_str, end_date_str)])
 
-        if search_type.startswith("Employees"):
-            headings = ['Employee Code', 'Employee Name', 'Reporting Manager', 'Location', 'Total Present',
-                        'Total Absent']
-        else:
-            headings = ['Employee Code', 'Employee Name', 'Reporting Manager', 'Location', 'Total Present', 'Total Absent']
-
+        headings = ['Employee Code', 'Employee Name', 'Reporting Manager', 'BU', 'Total Present', 'Total Absent']
         csv_writer.writerow(headings)
 
         for employee in employee_details:
@@ -260,21 +230,67 @@ def download_csv():
         csv_output.seek(0)
 
         filename = f"{search_type}.csv"
-        if department_name:
-            filename = f"Attendance Report: {department_name}.csv"
-
-        return Response(
+        response = Response(
             csv_output.getvalue(),
             mimetype='text/csv',
-            headers={'Content-Disposition': f'attachment;filename={filename}'}
+            headers={
+                'Content-Disposition': f'attachment;filename={filename}',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',  
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
         )
+        return response
+
+    except Exception as e:
+        return f"An error occurred while downloading CSV: {str(e)}"
+
+@app.route('/download_csv_bu')
+def download_csv_bu():
+    try:
+        employee_details = session.get('employee_details')
+        if not employee_details:
+            return "No data to download."
+
+        csv_output = StringIO()
+        csv_writer = csv.writer(csv_output)
+        search_type = session.get('search_type')
+        
+        start_date = session.get('Mar-1')
+        end_date = session.get('Mar-31')
+
+        start_date_str = start_date.strftime("%Y-%m-%d") if start_date else "01-Mar"
+        end_date_str = end_date.strftime("%Y-%m-%d") if end_date else "31-Mar"
+
+        csv_writer.writerow(["Attendance report: {}".format(search_type)])
+        csv_writer.writerow(["Date Range: {} to {}".format(start_date_str, end_date_str)])
+
+        headings = ['Employee Code', 'Employee Name', 'Reporting Manager', 'Location', 'Total Present', 'Total Absent']
+        csv_writer.writerow(headings)
+
+        for employee in employee_details:
+            csv_writer.writerow([employee[0], employee[1], employee[2], employee[3], employee[4], employee[5]])
+
+        csv_output.seek(0)
+
+        filename = f"{search_type}.csv"
+        response = Response(
+            csv_output.getvalue(),
+            mimetype='text/csv',
+            headers={
+                'Content-Disposition': f'attachment;filename={filename}',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',  
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        )
+        return response
 
     except Exception as e:
         return f"An error occurred while downloading CSV: {str(e)}"
 
 
+
+
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-

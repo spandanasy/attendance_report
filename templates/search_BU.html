@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Details by Location</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(45deg, #ff7eb9, #9ad8ff); /* Pink and blue colors */
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            color: white;
+            text-align: center;
+            padding-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        p {
+            color: black;
+            text-align: left;
+            margin-top: 20px;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .button-container a {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-right: 10px;
+            background-color:darkcyan;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .button-container a:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th colspan="12" style="text-align: center;">Attendance Report: {{ search_type }}</th>
+            </tr>
+            <tr>
+                <th colspan="12" style="text-align: center;">Date Range: {{ start_date|default('01-mar') }} - {{ end_date|default('31-mar') }}</th>
+            </tr>
+            <tr>
+                <th>Employee Code</th>
+                <th>Employee Name</th>
+                <th>Reporting Manager</th>
+                <th>Location</th>
+                <th>Total Present</th>
+                <th>Total Absent</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for employee in employee_details %}
+            <tr>
+                <td>{{ employee[0] }}</td>
+                <td>{{ employee[1] }}</td>
+                <td>{{ employee[2] }}</td>
+                <td>{{ employee[3] }}</td>
+                <td>{{ employee[4] }}</td>
+                <td>{{ employee[5] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p>Total number of Records: {{ number_of_values }}</p>
+    
+    <div class="button-container">
+        <a href="/">Back to Home</a>
+        <a href="/download_csv_bu">Download CSV</a>
+    </div>
+</body>
+</html>

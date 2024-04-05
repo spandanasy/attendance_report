@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Details</title>
+    <title>Employee Details by Location</title>
     <style>
         body {
             margin: 0;
@@ -33,8 +36,8 @@
             background-color: #f5f5f5;
         }
         p {
-            color: white;
-            text-align: center;
+            color: black;
+            text-align: left;
             margin-top: 20px;
         }
         .button-container {
@@ -45,7 +48,7 @@
             display: inline-block;
             padding: 10px 20px;
             margin-right: 10px;
-            background-color: #ffffff;
+            background-color:darkcyan;
             color: #333;
             text-decoration: none;
             border-radius: 5px;
@@ -56,61 +59,41 @@
     </style>
 </head>
 <body>
-    {% if employee_details %}
     <table>
         <thead>
             <tr>
                 <th colspan="12" style="text-align: center;">Attendance Report: {{ search_type }}</th>
             </tr>
             <tr>
-                <th colspan="12" style="text-align: center;">Date Range: {{ start_date|default('01-mar') }} - {{ end_date|default('26-mar') }}</th>
+                <th colspan="12" style="text-align: center;">Date Range: {{ start_date|default('01-mar') }} - {{ end_date|default('31-mar') }}</th>
             </tr>
             <tr>
-                {% if search_type.startswith("Employees") %}
                 <th>Employee Code</th>
                 <th>Employee Name</th>
                 <th>Reporting Manager</th>
-                <th>BU</th> <!-- Display BU for BU search -->
-                {% else %}
-                <th>Employee Code</th>
-                <th>Employee Name</th>
-                <th>Reporting Manager</th>
-                <th>Location</th> <!-- Display Location for Location search -->
-                {% endif %}
+                <th>BU</th>
                 <th>Total Present</th>
                 <th>Total Absent</th>
-                <!-- Add other employee details if necessary -->
             </tr>
         </thead>
         <tbody>
             {% for employee in employee_details %}
             <tr>
-                {% if search_type.startswith("Employees") %}
                 <td>{{ employee[0] }}</td>
                 <td>{{ employee[1] }}</td>
                 <td>{{ employee[2] }}</td>
-                <td>{{ employee[3] }}</td> <!-- Display BU for BU search -->
-                {% else %}
-                <td>{{ employee[0] }}</td>
-                <td>{{ employee[1] }}</td>
-                <td>{{ employee[2] }}</td>
-                <td>{{ employee[3] }}</td> <!-- Display Location for Location search -->
-                {% endif %}
-                <td>{{ employee[-2] }}</td> <!-- Total Present -->
-                <td>{{ employee[-3] }}</td> <!-- Total Absent -->
-
-                <!-- Add other employee details here -->
+                <td>{{ employee[3] }}</td>
+                <td>{{ employee[4] }}</td>
+                <td>{{ employee[5] }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <div class="button-container">
-        <a href="/">Back to Home</a>
-        <a href="/download_csv">Download CSV</a>
-    </div>
-
-    {% else %}
-    <p>No employees found.</p>
-    {% endif %}
+<p>Total number of Records: {{ number_of_values }}</p>
+    
+<div class="button-container">
+    <a href="/">Back to Home</a>
+    <a href="/download_csv_location">Download CSV</a>
+</div>
 </body>
 </html>
